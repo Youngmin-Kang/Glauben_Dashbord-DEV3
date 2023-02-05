@@ -1,0 +1,32 @@
+{% extends 'users/base.html'%}
+
+{%block body%}
+    <h3 class="text-center m-4">Agregar Usuario</h3>
+    {% if success %}
+        <div class="alert alert-success" role="alert">
+            El nuevo usuario fue agregado.
+            <a href="{% url 'editarInfo' %}" class="alert-link">
+                Volver a menu.</a>
+        </div>
+    {% else %}
+        <div class="row justify-content-center">
+            <div class="col-6">
+                <div class="card bg-light mb-3">
+                    <div class="card-header">
+                        <i class="fa-solid fa-address-card fa-lg"></i>  Registrar usuario
+                    </div>
+                    <div class="card-body">
+                        <form action="{% url 'add' %}" method="POST">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            
+                            <button type="submit" class="btn btn-primary">Agregar</button>
+                            <a href="{% url 'editarInfo' %}" class="btn btn-secondary">Cancelar</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {%endif%}
+
+{%endblock%}

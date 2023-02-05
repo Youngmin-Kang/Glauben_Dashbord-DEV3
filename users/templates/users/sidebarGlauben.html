@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link rel="icon" href="{% static 'images/images.jpg' %}" type="image/icon type">
+        <!-- CSS -->
+
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        
+
+        <!-- Boxicons CSS -->
+        <link
+            href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css"
+            rel="stylesheet"/>
+    </head>
+    <body>
+        {%if user.is_authenticated%}
+            <div class="container_sdi_flujo">
+                
+                <h3  class="Vari">SDI Entrada RO</h3>
+                <br>
+                <div  class="graphBox">
+                    <form action="/auth/prediccion/" method="POST">{% csrf_token %}
+                        <div class="box">
+                            <div class="box1">
+                                {% block content %}
+                                    <span>Variable de entrada</span>
+                                    <hr>
+                                    <br>
+                                    <span>Temperatura de entrada:
+                                    </span><br>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="temp"
+                                        id="temp"
+                                        onkeydown="onlyNumber(event);"
+                                        {% if temp %}
+                                         placeholder="{{temp}}"
+                                        {% else %}
+                                         placeholder="Solo números"
+                                        {% endif %}
+                                        value=""
+                                        required="required"/>
+
+                                    <br>
+                                    <br>
+                                    <span>Conductividad de permeado:
+                                    </span><br>
+                                    <input
+                                        type="text"
+                                        name="conduc"
+                                        id="conduc"
+                                        onkeydown="onlyNumber(event);"
+                                        {% if conduc %}
+                                        placeholder="{{conduc}}"
+                                        {% else %}
+                                         placeholder="Solo números"
+                                        {% endif %}
+                                        required="required"/>
+
+                                    <br>
+                                    <br>
+                                    <span>Diferencial de filtro de cartucho:
+                                    </span><br>
+                                    <input
+                                        type="text"
+                                        name="difer"
+                                        id="difer"
+                                        onkeydown="onlyNumber(event);"
+                                        {% if difer %}
+                                        placeholder="{{difer}}"
+                                        {% else %}
+                                         placeholder="Solo números"
+                                        {% endif %}
+                                        required="required"/>
+                                    <br>
+                                    <br>
+                                    <span>Flujo de alimentación:
+                                    </span><br>
+                                    <input
+                                        type="text"
+                                        name="flujoA"
+                                        id="flujoA"
+                                        onkeydown="onlyNumber(event);"
+                                        {% if flujoA %}
+                                        placeholder="{{flujoA}}"
+                                        {% else %}
+                                         placeholder="Solo números"
+                                        {% endif %}
+                                        required="required"/>
+                                {% endblock content %}
+                                <br>
+                            </div>
+                            <br>
+                            <hr>
+                            <div class="form">
+                                <div class="input-field button">
+                                    <input type="submit" value="Calcular">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="box">
+                        <div class="box1">
+                            <h2>SDI Entrada RO</h2>
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+                    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        // setup
+                        const chartWodth = document
+                            .querySelector('.box')
+                            .getBoundingClientRect()
+                            .width - 46;
+                        const ctx = document
+                            .getElementById('myChart')
+                            .getContext('2d');
+                        const gradientSegment = ctx.createLinearGradient(0, 0, chartWodth, 0);
+                        gradientSegment.addColorStop(1, 'Red');
+                        gradientSegment.addColorStop(0.7, 'yellow');
+                        gradientSegment.addColorStop(0, 'green');
+                        const valor1 = {{pred}};
+                        const valor2 = 5 - {{pred}};
+                        let demo = valor2;
+                        if (valor1 > '5') {
+                            demo = '0';
+                        }
+                        const data = {
+                            labels: [
+                                'SDI Entrada RO', 'Flujo Normalizado'
+                            ],
+                            datasets: [
+                                {
+                                    label: 'Weekly Sales',
+                                    data: [
+                                        valor1, demo
+                                    ],
+                                    backgroundColor: [
+                                        gradientSegment, 'rgba(0, 0, 0, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        gradientSegment, 'rgba(0, 0, 0, 0.2)'
+                                    ],
+                                    borderWidth: 1,
+                                    cutout: '90%',
+                                    circumference: 180,
+                                    rotation: 270
+                                }
+                            ]
+                        };
+
+                        // gauge
+                        const gaugeChartText = {
+                            id: 'gaugeChartText',
+                            afterDatasetsDraw(chart, args, pluginOptions) {
+                                const {
+                                    ctx,
+                                    data,
+                                    chartArea: {
+                                        top,
+                                        bottom,
+                                        left,
+                                        right,
+                                        width,
+                                        height
+                                    },
+                                    scales: {
+                                        r
+                                    }
+                                } = chart;
+
+                                ctx.save();
+
+                                const xCoor = chart
+                                    .getDatasetMeta(0)
+                                    .data[0]
+                                    .x;
+                                const yCoor = chart
+                                    .getDatasetMeta(0)
+                                    .data[0]
+                                    .y;
+                                const score = data
+                                    .datasets[0]
+                                    .data[0];
+                                let rating;
+
+                                if (score > 0 && score <= 3) {
+                                    rating = 'Ideal';
+                                }
+                                if (score > 3 && score <= 4) {
+                                    rating = 'Semi-Compleja';
+                                }
+                                if (score > 4 && score <= 5) {
+                                    rating = 'Compleja';
+                                }
+                                if (score > 5) {
+                                    rating = 'Inviable';
+                                }
+
+                                //ctx.fillRect(xCoor, yCoor, 400, 1);
+
+                                function textLabel(text, x, y, fontSize, textBaseLine, TextAlign) {
+                                    ctx.font = `${fontSize}px sans-serif`;
+                                    ctx.fillStyle = '#666';
+                                    ctx.textBaseLine = textBaseLine;
+                                    ctx.textAlign = TextAlign;
+                                    ctx.fillText(text, x, y);
+                                }
+                                textLabel('0', left, yCoor + 20, 20, 'top', 'left');
+                                textLabel('5', right, yCoor + 20, 20, 'top', 'right');
+                                textLabel(score, xCoor, yCoor, 70, 'bottom', 'center');
+                                textLabel(rating, xCoor, yCoor -70, 20, 'bottom', 'center');
+                            }
+                        };
+
+                        // config
+                        const config = {
+                            type: 'doughnut',
+                            data,
+                            options: {
+                                aspectRatio: 1.5,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        enabled: false
+                                    }
+                                }
+                            },
+                            plugins: [gaugeChartText]
+                        };
+
+                        // render init block
+                        const myChart = new Chart(document.getElementById('myChart'), config);
+                    </script>
+
+                    <div class="box">
+                        <div class="box1">
+                            <span>El tipo de operación de la planta es:
+                            </span>
+                            <h2>{{estadoOp}}</h2>
+                        </div>
+
+                    </div>
+                    <div class="box">
+                        <div class="box1">
+                            <span>Valor predicción (SDI):
+                            </span>
+                            <h2>{{pred}}</h2>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <nav>
+                    <div class="logo">
+                        <i class="bx bx-menu menu-icon"></i>
+                        <span class="logo-name">Glauben Ecology</span>
+                    </div>
+                    <div class="logo1">
+                        <span class="logo-name">Bienvenido, {{user.first_name}}</span>
+                    </div>
+                    <div class="sidebar">
+                        <div class="logo">
+                            <i class="bx bx-menu menu-icon"></i>
+                            <span class="logo-name">Glauben Ecology</span>
+                        </div>
+
+                        <div class="sidebar-content">
+                            <ul class="lists">
+                                
+                                <li class="list">
+                                    <a href="#" class="nav-link">
+                                        <i class="bx bx-bar-chart-alt-2 icon"></i>
+                                        <span class="link">Resumen</span>
+                                    </a>
+                                </li>
+                                
+                                <li class="list">
+                                    <a href="#" class="nav-link" onclick="getShow()">
+                                        <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                        <span class="link" id="submit">Predicción SDI</span>
+                                    </a>
+                                </li>
+                                <li class="list">
+                                    <a href="{% url 'FNsidebarGlauben' %}" class="nav-link">
+                                        <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                        <span class="link" id="submit">Predicción FN</span>
+                                    </a>
+                                </li>
+                                <li class="list">
+                                    <a href="/auth/multipleSDI" class="nav-link">
+                                        <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                        <span class="link" id="submit">Predicción múltiple SDI</span>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div class="bottom-cotent">
+                                <li class="list">
+                                    <a href="{% url 'editarInfo' %}" class="nav-link">
+                                        <i class="bx bx-cog icon"></i>
+                                        <span class="link">Configuraciones
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="list">
+                                    <a href="{% url 'logout' %}" class="nav-link">
+                                        <i class="bx bx-log-out icon"></i>
+                                        <span class="link">Logout</span>
+                                    </a>
+                                </li>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </nav>
+
+                <section class="overlay"></section>
+                <script>
+                    function onlyNumber(event) {
+                        var key = event.key;
+                        if ((key >= 0 && key < 10) || key == 'Backspace' || key == '.') {
+                            return true;
+                        } else {
+                            event.preventDefault();
+                        }
+                    }
+                </script>
+
+                <script type="text/javascript">
+                    document.getElementById("Img_Area").style.display = "none";
+            
+                    function getShow(){
+                        
+                        document.getElementById("Img_Area").style.display = "";
+                        
+                    }
+                </script>
+
+                <script src="{% static 'js/script.js'%}"></script>
+                <script src="{% static 'js/chart.min.js' %}"></script>
+                <script src="{% static 'js/mychart.js' %}"></script>
+
+            </div>
+        {%else%}
+        <p>
+            <a href="/auth/GlaubenLogin">Iniciar Sesion</a>
+        </p>
+        {%endif%}
+
+    </body>
+</html>

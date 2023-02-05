@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link rel="icon" href="{% static 'images/images.jpg' %}" type="image/icon type">
+        <!-- CSS -->
+
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+        <!-- Boxicons CSS -->
+        <link
+            href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css"
+            rel="stylesheet"/>
+    </head>
+    <body>
+        {% if user.is_authenticated %}
+        <div class="container_sdi_flujo">
+            <h3 class="Vari">Flujo Normalizado</h3>
+            <br>
+            <div class="graphBox1">
+                <form action="/auth/prediccionFN/" method="POST">{% csrf_token %}
+                    <div class="box">
+                        <div class="box1">
+                            <span>Variable de entrada</span>
+                            <hr>
+                            <br>
+                            <span>Temperatura de entrada:
+                            </span><br>
+                            <input
+                                type="text"
+                                step="any"
+                                name="temp"
+                                id="temp"
+                                onkeydown="onlyNumber(event);"
+                                {% if temp %}
+                                 placeholder="{{temp}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                value=""
+                                required="required"/>
+
+                            <br>
+                            <br>
+                            <span>Flujo de rechazo:
+                            </span><br>
+                            <input
+                                type="text"
+                                id="flujoR"
+                                name="flujoR"
+                                onkeydown="onlyNumber(event);"
+                                {% if flujoR %}
+                                 placeholder="{{flujoR}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                required="required"/>
+                            <br>
+                            <br>
+                            <span>Presión de entrada:
+                            </span><br>
+                            <input
+                                type="text"
+                                id="presion"
+                                name="presion"
+                                onkeydown="onlyNumber(event);"
+                                {% if presion %}
+                                 placeholder="{{presion}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                required="required"/>
+                            <br>
+                            <br>
+                            <span>Conductividad de entrada:
+                            </span><br>
+                            <input
+                                type="text"
+                                name="conduc"
+                                id="conduc"
+                                onkeydown="onlyNumber(event);"
+                                {% if conduc %}
+                                 placeholder="{{conduc}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                required="required"/>
+                            <br>
+                            <br>
+                            <hr>
+                            <br>
+                            <span>Caudal Nominal:
+                            </span><br>
+                            <input
+                                type="text"
+                                name="caudalNom"
+                                id="caudalNom"
+                                onkeydown="onlyNumber(event);"
+                                {% if caudalNom %}
+                                 placeholder="{{caudalNom}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                required="required"/>
+
+                            <br>
+                            <span>Flujo de Permeado (Caudal de Operación):
+                            </span><br>
+                            <input
+                                type="text"
+                                name="flujoPerm"
+                                id="flujoPerm"
+                                onkeydown="onlyNumber(event);"
+                                {% if flujoPerm %}
+                                 placeholder="{{flujoPerm}}"
+                                {% else %}
+                                 placeholder="Solo números"
+                                {% endif %}
+                                required="required"/>
+                            <br>
+                        </div>
+
+                        <br>
+                        <hr>
+                        <div class="form">
+                            <div class="input-field button">
+                                <input type="submit" value="Calcular">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="box">
+                    <div class="box1">
+                        <h2>Rendimiento Caudal Nominal(%)</h2>
+
+                    </div>
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div class="box">
+                    <div class="box1">
+                        <h2>Rendimiento Caudal Operacional(%)</h2>
+                    </div>
+                    <canvas id="myChart2"></canvas>
+                </div>
+
+                <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    // setup
+                    const chartWodth = document
+                        .querySelector('.box')
+                        .getBoundingClientRect()
+                        .width - 46;
+                    const ctx = document
+                        .getElementById('myChart')
+                        .getContext('2d');
+                    const gradientSegment = ctx.createLinearGradient(0, 0, chartWodth, 0);
+                    gradientSegment.addColorStop(0.9, 'Red');
+                    gradientSegment.addColorStop(0.95, 'yellow');
+                    gradientSegment.addColorStop(1, 'green');
+                    const valor1 = '18';
+                    const valor2 = '12';
+                    const valor3 = '6';
+                    let demo = valor2;
+
+                    const data = {
+                        labels: [
+                            '70%', '10%', '20%'
+                        ],
+                        datasets: [
+                            {
+                                label: 'Weekly Sales',
+                                data: [
+                                    70, 10, 20
+                                ],
+                                backgroundColor: [
+                                    'rgba(255, 26, 104, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'
+                                ],
+                                needleValue: {{perfomance}},
+                                borderColor: 'white',
+                                borderWidth: 2,
+                                cutout: '90%',
+                                circumference: 180,
+                                rotation: 270,
+                                borderRadius: 5
+                            }
+                        ]
+                    };
+
+                    // gauge
+                    const gaugeNeedle = {
+                        id: 'gaugeNeedle',
+                        afterDatasetsDraw(chart, args, pluginOptions) {
+                            const {
+                                ctx,
+                                config,
+                                data,
+                                chartArea: {
+                                    top,
+                                    bottom,
+                                    left,
+                                    right,
+                                    width,
+                                    height
+                                }
+
+                            } = chart;
+
+                            ctx.save();
+
+                            const needleValue = data
+                                .datasets[0]
+                                .needleValue;
+                            const dataTotal = data
+                                .datasets[0]
+                                .data
+                                .reduce((a, b) => a + b, 0);
+                            const xCoor = chart
+                                .getDatasetMeta(0)
+                                .data[0]
+                                .x;
+                            const yCoor = chart
+                                .getDatasetMeta(0)
+                                .data[0]
+                                .y;
+                            const angle = Math.PI + ((1 / dataTotal) * needleValue * Math.PI);
+
+                            const cx = width / 2;
+                            const cy = chart
+                                ._metasets[0]
+                                .data[0]
+                                .y;
+
+                            function textLabel(text, x, y, fontSize, textBaseLine, TextAlign) {
+                                ctx.font = `${fontSize}px sans-serif`;
+                                ctx.fillStyle = '#666';
+                                ctx.textBaseLine = textBaseLine;
+                                ctx.textAlign = TextAlign;
+                                ctx.fillText(text, x, y);
+                            }
+                            textLabel('0%', left, yCoor + 20, 20, 'top', 'left');
+                            textLabel('100%', right, yCoor + 20, 20, 'top', 'right');
+
+                            //needle
+                            ctx.translate(cx + 20, cy);
+                            ctx.rotate(angle);
+                            ctx.beginPath();
+                            ctx.moveTo(0, -2);
+                            ctx.lineTo(height - (ctx.canvas.offsetTop + 120), 0);
+                            ctx.lineTo(0, 2);
+                            ctx.fillStyle = '#444';
+                            ctx.fill();
+
+                            //ctx.restore();
+                            ctx.translate(-cx, -cy);
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, 5, 0, 10);
+                            ctx.fill();
+                            ctx.restore();
+
+                            ctx.font = '50px Helvetica';
+                            ctx.fillStyle = '#444';
+                            ctx.fillText(needleValue + '%', cx - 30, cy + 50);
+                            ctx.textAlign = 'center';
+                            ctx.restore();
+
+                            chart
+                                .data
+                                .datasets
+                                .forEach((dataset, i) => {
+                                    chart
+                                        .getDatasetMeta(i)
+                                        .data
+                                        .forEach((dataPoint, index) => {
+                                            const {x, y} = dataPoint.tooltipPosition();
+
+                                            const halfwidth = width / 2;
+                                            const halfheight = height / 2;
+
+                                            const xLine = x >= halfwidth
+                                                ? x + 15
+                                                : x - 15;
+                                            const yLine = y >= halfheight
+                                                ? y + 15
+                                                : y - 15;
+                                            const extraLine = x >= halfwidth
+                                                ? 15
+                                                : -15;
+
+                                            //line
+                                            ctx.beginPath();
+                                            ctx.moveTo(x, y);
+                                            ctx.lineTo(xLine, yLine);
+                                            ctx.lineTo(xLine + extraLine, yLine);
+                                            ctx.strokeStyle = dataset.borderColor[index];
+                                            ctx.stroke();
+
+                                            // text
+                                            const textWidth = ctx
+                                                .measureText(chart.data.labels[index])
+                                                .width;
+                                            ctx.font = '20px Helvetica';
+
+                                            //control de pocision
+                                            const textXPosition = x >= halfwidth
+                                                ? 'left'
+                                                : 'right';
+                                            const plusFivePx = x >= halfwidth
+                                                ? 5
+                                                : -5;
+                                            ctx.textAlign = textXPosition;
+                                            ctx.textBaseLine = 'middle';
+                                            ctx.fillStyle = dataset.borderColor[index];
+                                            ctx.fillText(chart.data.labels[index], xLine + extraLine + plusFivePx, yLine);
+
+                                        })
+                                })
+
+                        }
+                    };
+
+                    // config
+                    const config = {
+                        type: 'doughnut',
+                        data,
+                        options: {
+                            layout: {
+                                padding: 20
+                            },
+                            maintainAspectRadio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    yAlign: 'bottom',
+                                    displayColors: false,
+                                    /*(callbacks: {
+                                label: function (tooltipItem, data, value) {
+                                    const tracker = tooltipItem.dataset.needleValue;
+                                    return `Tracker Score: ${tracker} % `;
+                                }
+                            }*/
+                                }
+                            }
+                        },
+                        plugins: [gaugeNeedle]
+                    };
+
+                    // render init block
+                    const myChart = new Chart(document.getElementById('myChart'), config);
+
+                   
+                    const ctx2 = document
+                        .getElementById('myChart2')
+                        .getContext('2d');
+                 
+                    const data2 = {
+                        labels: [
+                            '85%', '10%', '5%'
+                        ],
+                        datasets: [
+                            {
+                                label: 'Weekly Sales',
+                                data: [
+                                  85, 10, 5
+                                ],
+                                backgroundColor: [
+                                    'rgba(255, 26, 104, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'
+                                ],
+                                needleValue: {{perfomance2}},
+                                borderColor: 'white',
+                                borderWidth: 2,
+                                cutout: '90%',
+                                circumference: 180,
+                                rotation: 270,
+                                borderRadius: 5
+                            }
+                        ]
+                    };
+
+                    // gauge
+                    const gaugeNeedle2 = {
+                        id: 'gaugeNeedle2',
+                        afterDatasetsDraw(chart, args, pluginOptions) {
+                            const {
+                                ctx,
+                                config,
+                                data,
+                                chartArea: {
+                                    top,
+                                    bottom,
+                                    left,
+                                    right,
+                                    width,
+                                    height
+                                }
+
+                            } = chart;
+
+                            ctx.save();
+
+                            const needleValue = data
+                                .datasets[0]
+                                .needleValue;
+                            const dataTotal = data
+                                .datasets[0]
+                                .data
+                                .reduce((a, b) => a + b, 0);
+                            const xCoor = chart
+                                .getDatasetMeta(0)
+                                .data[0]
+                                .x;
+                            const yCoor = chart
+                                .getDatasetMeta(0)
+                                .data[0]
+                                .y;
+                            const angle = Math.PI + ((1 / dataTotal) * needleValue * Math.PI);
+
+                            const cx = width / 2;
+                            const cy = chart
+                                ._metasets[0]
+                                .data[0]
+                                .y;
+
+                            function textLabel(text, x, y, fontSize, textBaseLine, TextAlign) {
+                                ctx.font = `${fontSize}px sans-serif`;
+                                ctx.fillStyle = '#666';
+                                ctx.textBaseLine = textBaseLine;
+                                ctx.textAlign = TextAlign;
+                                ctx.fillText(text, x, y);
+                            }
+                            textLabel('0%', left, yCoor + 20, 20, 'top', 'left');
+                            textLabel('100%', right, yCoor + 20, 20, 'top', 'right');
+
+                            //needle
+                            ctx.translate(cx + 20, cy);
+                            ctx.rotate(angle);
+                            ctx.beginPath();
+                            ctx.moveTo(0, -2);
+                            ctx.lineTo(height - (ctx.canvas.offsetTop + 120), 0);
+                            ctx.lineTo(0, 2);
+                            ctx.fillStyle = '#444';
+                            ctx.fill();
+
+                            //ctx.restore();
+                            ctx.translate(-cx, -cy);
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, 5, 0, 10);
+                            ctx.fill();
+                            ctx.restore();
+
+                            ctx.font = '50px Helvetica';
+                            ctx.fillStyle = '#444';
+                            ctx.fillText(needleValue + '%', cx - 30, cy + 50);
+                            ctx.textAlign = 'center';
+                            ctx.restore();
+
+                            chart
+                                .data
+                                .datasets
+                                .forEach((dataset, i) => {
+                                    chart
+                                        .getDatasetMeta(i)
+                                        .data
+                                        .forEach((dataPoint, index) => {
+                                            const {x, y} = dataPoint.tooltipPosition();
+
+                                            const halfwidth = width / 2;
+                                            const halfheight = height / 2;
+
+                                            const xLine = x >= halfwidth
+                                                ? x + 15
+                                                : x - 15;
+                                            const yLine = y >= halfheight
+                                                ? y + 15
+                                                : y - 15;
+                                            const extraLine = x >= halfwidth
+                                                ? 15
+                                                : -15;
+
+                                            //line
+                                            ctx.beginPath();
+                                            ctx.moveTo(x, y);
+                                            ctx.lineTo(xLine, yLine);
+                                            ctx.lineTo(xLine + extraLine, yLine);
+                                            ctx.strokeStyle = dataset.borderColor[index];
+                                            ctx.stroke();
+
+                                            // text
+                                            const textWidth = ctx
+                                                .measureText(chart.data.labels[index])
+                                                .width;
+                                            ctx.font = '20px Helvetica';
+
+                                            //control de pocision
+                                            const textXPosition = x >= halfwidth
+                                                ? 'left'
+                                                : 'right';
+                                            const plusFivePx = x >= halfwidth
+                                                ? 5
+                                                : -5;
+                                            ctx.textAlign = textXPosition;
+                                            ctx.textBaseLine = 'middle';
+                                            ctx.fillStyle = dataset.borderColor[index];
+                                            ctx.fillText(chart.data.labels[index], xLine + extraLine + plusFivePx, yLine);
+
+                                        })
+                                })
+
+                        }
+                    };
+
+                    // config
+                    const config2 = {
+                        type: 'doughnut',
+                        data: data2,
+                        options: {
+                            layout: {
+                                padding: 20
+                            },
+                            maintainAspectRadio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    yAlign: 'bottom',
+                                    displayColors: false,
+                                    /*(callbacks: {
+                                label: function (tooltipItem, data, value) {
+                                    const tracker = tooltipItem.dataset.needleValue;
+                                    return `Tracker Score: ${tracker} % `;
+                                }
+                            }*/
+                                }
+                            }
+                        },
+                        plugins: [gaugeNeedle2]
+                    };
+
+                    // render init block
+                    const myChart2 = new Chart(document.getElementById('myChart2'), config2);
+                </script>
+                <div class="box">
+                    <div class="box1">
+                        <span>Valor predicción FN (m3/h):
+                        </span>
+                        <h2>{{pred}}</h2>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box1">
+                        <span>Rendimiento con respecto a Caudal Nominal (%):
+                        </span>
+                        <h2>{{perfomance}}</h2>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box1">
+                        <span>Rendimiento con respecto a Caudal Operacional (%):
+                        </span>
+                        <h2>{{perfomance2}}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="logo">
+                <i class="bx bx-menu menu-icon"></i>
+                <span class="logo-name">Glauben Ecology</span>
+            </div>
+            <div class="logo1">
+                <span class="logo-name">Bienvenido, {{user.first_name}}</span>
+            </div>
+            <div class="sidebar">
+                <div class="logo">
+                    <i class="bx bx-menu menu-icon"></i>
+                    <span class="logo-name">Glauben Ecology</span>
+                </div>
+
+                <div class="sidebar-content">
+                    <ul class="lists">
+                        
+                        <li class="list">
+                            <a href="#" class="nav-link">
+                                <i class="bx bx-bar-chart-alt-2 icon"></i>
+                                <span class="link">Resumen</span>
+                            </a>
+                        </li>
+                        
+                        <li class="list">
+                            <a href="{% url 'sidebarGlauben' %}" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción SDI</span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="#" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción FN</span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="/auth/multipleSDI" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción múltiple SDI</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="bottom-cotent">
+                        <li class="list">
+                            <a href="{% url 'editarInfo' %}" class="nav-link">
+                                <i class="bx bx-cog icon"></i>
+                                <span class="link">Configuraciones
+                                </span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="{% url 'logout' %}" class="nav-link">
+                                <i class="bx bx-log-out icon"></i>
+                                <span class="link">Logout</span>
+                            </a>
+                        </li>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+        <section class="overlay"></section>
+        <script>
+            function onlyNumber(event) {
+                var key = event.key;
+                if ((key >= 0 && key < 10) || key == 'Backspace' || key == '.') {
+                    return true;
+                } else {
+                    event.preventDefault();
+                }
+            }
+        </script>
+        <script type="text/javascript">
+            
+            function getShow(){
+                
+                document.getElementById("Img_Area").style.display = "";
+                
+            }
+            
+            function getHide(){
+                
+                document.getElementById("Img_Area").style.display = "none";
+                
+            }
+         </script>
+
+        
+
+        <script src="{% static 'js/script.js'%}"></script>
+        <script src="{% static 'js/chart.min.js' %}"></script>
+        <script src="{% static 'js/mychart.js' %}"></script>
+
+        {%else%}
+        <p><a href="/auth/GlaubenLogin">Iniciar Sesion</a></p>
+        {%endif%}
+
+    </body>
+</html>

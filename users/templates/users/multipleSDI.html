@@ -1,0 +1,73 @@
+{% extends 'users/base.html'%}
+
+{%block body%}
+    <div class="container_sdi_flujo">
+        <br>
+        <br>
+        <br>
+        <br>
+        <h3 class="Vari">Predicción múltiple: SDI Entrada RO</h3>
+        <br>
+        <div class="graphBox1">
+            <form action="/auth/multipleSDI/" method="POST" enctype="multipart/form-data">{% csrf_token %}
+                <div class="box">
+                    <div class="box1">
+                        <h2>Datos en excel o csv</h2>
+                    </div>
+                    <hr>
+                    <br>
+                    <div class="mb-3">
+                        <input class="form-control" type="file" id="myFile" name="myFile">
+                    </div>
+                    <div class="form">
+
+                        <div>
+                            <input type="checkbox" id="limpio" name="limpio">
+                            <label for="limpio">Datos limpios
+                            </label>
+                        </div>
+
+                        <div class="input-field button">
+                            <input type="submit" value="Subir datos">
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="box">
+                <div class="box1">
+                    <h4>Grafico de SDI</h4>
+                    {% autoescape off %}
+                        {{plot_div}}
+                    {% endautoescape %}
+                </div>
+            </div>
+
+
+            <div class="box">
+                <div class="box1">
+                    <h4>SDI Máximo:</h4>
+                    <h2>{{sdiMax}}</h2>
+                </div>
+
+            </div>
+            <div class="box">
+                <div class="box1">
+                    <h4>SDI promedio:
+                    </h4>
+                    <h2>{{sdiProm}}</h2>
+                </div>
+
+            </div>
+            <div class="box">
+                <div class="box1">
+                    <h4>SDI minimo:
+                    </h4>
+                    <h2>{{sdiMin}}</h2>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    {%endblock%}

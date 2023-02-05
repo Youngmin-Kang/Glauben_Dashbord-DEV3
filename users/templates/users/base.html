@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link rel="icon" href="{% static 'images/images.jpg' %}" type="image/icon type">
+        <!-- CSS -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+        <!-- Boxicons CSS -->
+        <link
+            href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css"
+            rel="stylesheet"/>
+    </head>
+    <body class="d-flex flex-column min-vh-100">
+        {% if user.is_authenticated %}
+            
+               
+                    
+                    {%block body%}
+                    {% csrf_token %}
+                    {%endblock%}
+                
+                
+                <script
+                    src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+            
+        
+        <nav>
+            <div class="logo">
+                <i class="bx bx-menu menu-icon"></i>
+                <span class="logo-name">Glauben Ecology</span>
+            </div>
+            <div class="logo1">
+                <span class="logo-name">Bienvenido,
+                    {{user.first_name}}</span>
+            </div>
+            <div class="sidebar">
+                <div class="logo">
+                    <i class="bx bx-menu menu-icon"></i>
+                    <span class="logo-name">Glauben Ecology</span>
+                </div>
+
+                <div class="sidebar-content">
+                    <ul class="lists">
+                        
+                        <li class="list">
+                            <a href="#" class="nav-link">
+                                <i class="bx bx-bar-chart-alt-2 icon"></i>
+                                <span class="link">Resumen</span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="{% url 'sidebarGlauben' %}" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción SDI</span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="#" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción FN</span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="/auth/multipleSDI" class="nav-link">
+                                <i class="bx bx-pie-chart-alt-2 icon"></i>
+                                <span class="link" id="submit">Predicción múltiple SDI</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="bottom-cotent">
+                        <li class="list">
+                            <a href="{% url 'editarInfo' %}" class="nav-link">
+                                <i class="bx bx-cog icon"></i>
+                                <span class="link">Configuraciones
+                                </span>
+                            </a>
+                        </li>
+                        <li class="list">
+                            <a href="{% url 'logout' %}" class="nav-link">
+                                <i class="bx bx-log-out icon"></i>
+                                <span class="link">Logout</span>
+                            </a>
+                        </li>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+        <section class="overlay"></section>
+        <script>
+            function onlyNumber(event) {
+                var key = event.key;
+                if ((key >= 0 && key < 10) || key == 'Backspace' || key == '.') {
+                    return true;
+                } else {
+                    event.preventDefault();
+                }
+            }
+        </script>
+
+        <script src="{% static 'js/script.js'%}"></script>
+        <script src="{% static 'js/chart.min.js' %}"></script>
+        <script src="{% static 'js/mychart.js' %}"></script>
+        {%else%}
+        <p>
+            <a href="/auth/GlaubenLogin">Iniciar Sesion</a>
+        </p>
+        {%endif%}
+
+    </body>
+</html>
